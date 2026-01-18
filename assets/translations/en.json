@@ -1,0 +1,14 @@
+{
+  "الإعدادات": "Settings",
+  "logout": "Logout",
+  "delete_account": "Delete Account",
+  "are_you_sure": "Are you sure?",
+  "delete_warning": "Do you want to delete your account permanently?",
+  "logout_confirm_msg": "Do you want to logout and play later?",
+  "confirm": "Yes",
+  "cancel": "No",
+  "attention": "Attention Hero!",
+  "re_login_before_delete": "For your safety, please logout and login again before deleting your account.",
+  "error_occurred": "An error occurred, please try again!",
+  "re_login_msg": "Please login again"
+}
