@@ -6,7 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:miral_with_mathematics/miral_with_mathematics.dart';
 import 'firebase_options.dart';
 
+
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
+
 void main() async {
+
   // 1. تأمين تشغيل المكتبات
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
@@ -34,6 +39,7 @@ void main() async {
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
+
 
   // 4. تشغيل التطبيق
   runApp(

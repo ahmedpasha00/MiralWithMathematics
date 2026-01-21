@@ -10,5 +10,22 @@
   "attention": "Attention Hero!",
   "re_login_before_delete": "For your safety, please logout and login again before deleting your account.",
   "error_occurred": "An error occurred, please try again!",
-  "re_login_msg": "Please login again"
+  "re_login_msg": "Please login again",
+  "العد": "Counting",
+  "العمليات": "Operations",
+  "الهندسة": "Geometry",
+  "القياس": "Measurement",
+  "الأبطال الأوائل": "Top Heroes",
+  "اﻷﻋداد": "Numbers",
+  "easy_level": "Easy Level",
+  "medium_level": "Medium Level",
+  "hard_level": "Hard Level",
+  "success_title": "Great Job! 🎉",
+  "success_message": "You have solved the puzzle successfully",
+  "back_to_menu": "Back to Menu",
+  "excellent_hero": "Excellent Hero!",
+  "stars_count": "Stars: {}",
+  "play_again": "Play Again",
+  "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8", "9": "9", "10": "10",
+  "11": "11", "12": "12", "13": "13", "14": "14", "15": "15", "16": "16", "17": "17", "18": "18", "19": "19", "20": "20"
 }

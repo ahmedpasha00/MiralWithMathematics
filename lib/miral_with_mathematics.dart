@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'feature/splash/presentation/ui/splash_screen.dart';
+import 'main.dart';
 
 class MiralWithMathematics extends StatelessWidget {
   const MiralWithMathematics({super.key});
@@ -17,6 +18,7 @@ class MiralWithMathematics extends StatelessWidget {
     splitScreenMode: true,
       child: MaterialApp(
       debugShowCheckedModeBanner: false,
+        navigatorObservers: [routeObserver],
 
         // ✨ السطور الثلاثة دي هي اللي هتحل المشكلة ✨
         localizationsDelegates: context.localizationDelegates,

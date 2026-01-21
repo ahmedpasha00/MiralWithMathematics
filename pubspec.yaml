@@ -46,6 +46,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   easy_localization: ^3.0.8
   snow_fall_animation: ^0.0.1+3
+  chewie: ^1.13.0
 
 
 
