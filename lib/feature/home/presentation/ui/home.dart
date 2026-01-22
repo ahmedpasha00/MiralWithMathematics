@@ -348,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                           () {
                             _showLanguageDialog(
                               context: context,
-                              arVideo: "assets/audio/Geometry.mp4",
+                              arVideo: "assets/audio/Numbers.mp4",
                               enVideo: "assets/audio/eng.mp4",
                               nextScreen: BlocProvider(
                                 create: (context) =>
@@ -400,7 +400,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                             () {
                               _showLanguageDialog(
                                 context: context,
-                                arVideo: "assets/audio/Numbers.mp4",
+
+
+                                arVideo: "assets/audio/Geometry.mp4",
                                 enVideo: "assets/audio/eng.mp4",
                                 nextScreen: BlocProvider(
                                   create: (context) =>

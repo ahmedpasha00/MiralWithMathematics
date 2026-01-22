@@ -7,6 +7,7 @@ import 'package:miral_with_mathematics/core/widget/common_game_background.dart';
 import 'package:miral_with_mathematics/core/widget/Interactive_panda_widget.dart';
 import 'package:miral_with_mathematics/core/widget/custom_cartoon_button.dart';
 import '../../data/cubit/counting_cubit.dart';
+import '../../../../core/models/question_model.dart';
 
 class CountingScreen extends StatefulWidget {
   final String categoryName;
@@ -27,9 +28,13 @@ class _CountingScreenState extends State<CountingScreen>
   late AnimationController _shakeController;
   bool _isFirstAttempt = true;
 
+  final List<String> _emojis = ['🍎', '🍓', '🍊', '🍇', '🍉', '🍌', '🍍', '🍒'];
+
   @override
   void initState() {
     super.initState();
+    context.read<CountingCubit>().initCategory(widget.categoryName);
+
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -83,7 +88,6 @@ class _CountingScreenState extends State<CountingScreen>
                 ),
               ),
             ),
-
             _buildPandaAvatar(),
             BlocBuilder<CountingCubit, CountingState>(
               builder: (context, state) {
@@ -97,7 +101,6 @@ class _CountingScreenState extends State<CountingScreen>
                 return const SizedBox.shrink();
               },
             ),
-
             _buildTopUI(context),
           ],
         ),
@@ -141,7 +144,9 @@ class _CountingScreenState extends State<CountingScreen>
     final currentQuestion = state.currentQuestion;
     if (currentQuestion == null) return const SizedBox.shrink();
 
+    final String currentEmoji = _emojis[state.starsEarned % _emojis.length];
     bool isOperations = widget.categoryName.contains('العمليات');
+    bool isPlaceValue = widget.categoryName.contains('قسم الاعداد');
 
     return Positioned(
       left: 90.w,
@@ -153,8 +158,8 @@ class _CountingScreenState extends State<CountingScreen>
           if (_shakeController.value > 0) {
             offset =
                 (0.5 - (0.5 - _shakeController.value).abs()) *
-                    20 *
-                    ((0.5 - _shakeController.value) > 0 ? 1 : -1);
+                20 *
+                ((0.5 - _shakeController.value) > 0 ? 1 : -1);
           }
           return Transform.translate(offset: Offset(offset, 0), child: child);
         },
@@ -177,17 +182,17 @@ class _CountingScreenState extends State<CountingScreen>
                     ),
                   ),
                   child: Center(
-                    child: isOperations
-                        ? _buildAdditionLayout(currentQuestion)
-                        : _buildCountingLayout(currentQuestion),
+                    child: isPlaceValue
+                        ? _buildPlaceValueLayout(currentQuestion)
+                        : isOperations
+                        ? _buildAdditionLayout(currentQuestion, currentEmoji)
+                        : _buildCountingLayout(currentQuestion, currentEmoji),
                   ),
                 ),
                 ..._buildStarBadges(state.starsEarned),
               ],
             ),
-
             SizedBox(width: 15.w),
-
             SizedBox(
               height: 200.h,
               child: SingleChildScrollView(
@@ -199,7 +204,7 @@ class _CountingScreenState extends State<CountingScreen>
                       child: _buildOptionButton(
                         context,
                         option,
-                        currentQuestion.count,
+                        currentQuestion.correctAnswer ?? currentQuestion.count,
                         state,
                       ),
                     );
@@ -213,87 +218,159 @@ class _CountingScreenState extends State<CountingScreen>
     );
   }
 
-  // --- التعديل لربط بيانات الجمع والطرح من الكيوبت ---
-  Widget _buildAdditionLayout(dynamic question) {
-    // نستخدم firstNum و secondNum بدلاً من تقسيم الـ count يدوياً
+  Widget _buildCountingLayout(QuestionModel question, String emoji) {
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: Container(
+        width: 250.w,
+        padding: EdgeInsets.all(10.w),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12.w,
+          runSpacing: 12.h,
+          children: List.generate(
+            question.count,
+            (index) => Text(emoji, style: TextStyle(fontSize: 45.sp)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdditionLayout(QuestionModel question, String emoji) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        FittedBox(
-          fit: BoxFit.contain,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // رسم صور الرقم الأول
-              _imageGroup(question.firstNum, question.imagePath),
-
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10.w),
-                child: Text(
-                  // تبديل العلامة ديناميكياً بناءً على نوع السؤال
-                  question.isAddition ? "+" : "-",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 35.sp,
-                    fontWeight: FontWeight.bold,
+        Expanded(
+          child: Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _emojiGroup(question.firstNum, emoji),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10.w),
+                    child: Text(
+                      question.isAddition ? "+" : "-",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 40.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
+                  _emojiGroup(question.secondNum, emoji),
+                ],
               ),
-
-              // رسم صور الرقم الثاني
-              _imageGroup(question.secondNum, question.imagePath),
-            ],
+            ),
           ),
         ),
-        // عرض العملية الحسابية بالأرقام أسفل الصور لزيادة الاستيعاب
-        SizedBox(height: 12.h),
+        SizedBox(height: 8.h),
         Text(
           "${question.firstNum} ${question.isAddition ? '+' : '-'} ${question.secondNum} = ؟",
           style: TextStyle(
-            color: Colors.white70,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 20.sp,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildCountingLayout(dynamic question) {
-    int crossAxisCount = question.count <= 4 ? 2 : 3;
+  // --- تصميم الآحاد والعشرات الجديد (البيوت ريسبونسف) ---
+  Widget _buildPlaceValueLayout(QuestionModel question) {
+    String questionTitle = question.firstNum == 1
+        ? "من يسكن في بيت الآحاد؟".tr()
+        : "من يسكن في بيت العشرات؟".tr();
 
-    return FittedBox(
-      fit: BoxFit.contain,
-      child: SizedBox(
-        width: 280.w,
-        child: GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 15.w,
-            mainAxisSpacing: 15.h,
-            childAspectRatio: 1,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          questionTitle,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.yellowAccent,
+            fontSize: 12.sp,
+            fontWeight: FontWeight.bold,
           ),
-          itemCount: question.count,
-          itemBuilder: (context, index) =>
-              Image.asset(question.imagePath, fit: BoxFit.contain),
         ),
-      ),
+        SizedBox(height: 10.h),
+
+        SizedBox(height: 10.h),
+        Text(
+          "${"العدد".tr()}: ${question.count.toString().tr()}", // ترجمنا الكلمة لوحدها والرقم لوحده
+          // "العدد: ${question.count}".tr(),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _imageGroup(int count, String path) {
-    return SizedBox(
-      width: count > 3 ? 110.w : 75.w,
+  Widget _buildHouseUI({
+    required String title,
+    required String value,
+    required Color color,
+    required bool isLarge,
+  }) {
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            // Icon(Icons.home, color: color, size: isLarge ? 80.sp : 65.sp),
+            Padding(
+              padding: EdgeInsets.only(bottom: 35.h),
+              child: Container(
+                width: isLarge ? 30.w : 30.w,
+                height: isLarge ? 45.h : 45.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5.r),
+                ),
+                child: Center(
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          title,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _emojiGroup(int count, String emoji) {
+    return Container(
+      constraints: BoxConstraints(maxWidth: 100.w),
       child: Wrap(
         alignment: WrapAlignment.center,
         spacing: 4.w,
         runSpacing: 4.h,
         children: List.generate(
           count,
-              (index) =>
-              Image.asset(path, width: 40.w, height: 55.h, fit: BoxFit.contain),
+          (index) => Text(emoji, style: TextStyle(fontSize: 25.sp)),
         ),
       ),
     );
@@ -317,13 +394,13 @@ class _CountingScreenState extends State<CountingScreen>
   }
 
   Widget _buildBadgeAt(
-      int starsEarned,
-      int badgeIndex, {
-        double? top,
-        double? bottom,
-        double? left,
-        double? right,
-      }) {
+    int starsEarned,
+    int badgeIndex, {
+    double? top,
+    double? bottom,
+    double? left,
+    double? right,
+  }) {
     bool isSolved = (badgeIndex < starsEarned);
     return Positioned(
       top: top,
@@ -358,18 +435,27 @@ class _CountingScreenState extends State<CountingScreen>
       CountingState state,
       ) {
     return InkWell(
-      onTap: () {
+      onTap: () async {
+        String langCode = context.locale.languageCode;
+
+        // 1. نطق الرقم اللي الطفل ضغط عليه (سواء صح أو غلط)
+        try {
+          await FlameAudio.play('$langCode/$value.mp3', volume: 1.0);
+        } catch (e) {
+          debugPrint("Audio error: $e");
+        }
+
+        // 2. التحقق من الإجابة
         if (value == correctAnswer) {
-          _playClickSound();
-          String audio = context.locale.languageCode == 'ar'
-              ? state.currentQuestion!.audioPathAr
-              : state.currentQuestion!.audioPathEn;
-          FlameAudio.play(audio);
+          // تأخير بسيط عشان يلحق يسمع اسم الرقم قبل ما السؤال يتغير
+          await Future.delayed(const Duration(milliseconds: 700));
+
           context.read<CountingCubit>().nextQuestion(earnStar: _isFirstAttempt);
           setState(() {
             _isFirstAttempt = true;
           });
         } else {
+          // لو الإجابة غلط بنعمل الهزة فقط (لأن الصوت اشتغل فوق خلاص)
           _triggerShake();
         }
       },
@@ -382,12 +468,18 @@ class _CountingScreenState extends State<CountingScreen>
           border: Border.all(color: Colors.white, width: 3.w),
         ),
         child: Center(
-          child: Text(
-            value.toString().tr(),
-            style: TextStyle(
-              fontSize: 20.sp,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Padding(
+              padding: EdgeInsets.all(4.w),
+              child: Text(
+                value.toString().tr(),
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ),

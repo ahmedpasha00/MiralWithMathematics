@@ -6,27 +6,34 @@ part 'counting_state.dart';
 
 class CountingCubit extends Cubit<CountingState> {
   final CountingRepository repository;
-  // أضفنا المتغير ده عشان نعرف إحنا في أنهي قسم (عد ولا عمليات)
   String currentCategory = "";
 
   CountingCubit(this.repository) : super(CountingState());
 
-  // دالة لتهيئة القسم قبل اختيار المستوى
+  // دالة تهيئة القسم
   void initCategory(String category) {
     currentCategory = category;
-    emit(state.copyWith(step: CountingStep.levels));
+    emit(state.copyWith(step: CountingStep.levels, categoryName: category));
   }
 
-  // دالة اختيار المستوى - معدلة لتدعم العمليات والعد
+  // دالة اختيار المستوى - محدثة لدعم القياس وكافة الأقسام
   void selectLevel(int levelIndex) {
     List<QuestionModel> selectedQuestions;
 
-    // فحص: هل القسم الحالي هو "العمليات"؟
-    if (currentCategory.contains("العمليات")) {
-      // بنادي الدالة الجديدة اللي عملناها في الريبو للجمع والطرح
+    // 1. فحص قسم الأعداد (الآحاد والعشرات)
+    if (currentCategory.contains("قسم الاعداد")) {
+      selectedQuestions = repository.getPlaceValueQuestions(levelIndex);
+    }
+    // 2. فحص قسم العمليات (جمع وطرح)
+    else if (currentCategory.contains("العمليات")) {
       selectedQuestions = repository.getOperationsQuestions(levelIndex);
-    } else {
-      // لو مش عمليات، يبقى عد عادي ونستخدم المنطق القديم
+    }
+    // 3. فحص قسم القياس (الطول والوزن) - الجديد
+    else if (currentCategory.contains("القياس")) {
+      selectedQuestions = repository.getMeasurementQuestions(levelIndex, currentCategory);
+    }
+    // 4. قسم العد العادي
+    else {
       if (levelIndex == 0) {
         selectedQuestions = repository.getLevel1Questions();
       } else if (levelIndex == 1) {
@@ -47,7 +54,7 @@ class CountingCubit extends Cubit<CountingState> {
     );
   }
 
-  // الدالة المسؤولة عن نقل السؤال وحساب النجوم (بدون تغيير في المنطق)
+  // انتقال للسؤال التالي
   void nextQuestion({required bool earnStar}) {
     int updatedStars = earnStar ? state.starsEarned + 1 : state.starsEarned;
 
@@ -65,11 +72,10 @@ class CountingCubit extends Cubit<CountingState> {
     }
   }
 
-  // للعودة لشاشة اختيار المستويات
+  // إعادة البدء
   void startWithLevels() {
     emit(
       state.copyWith(
-        // استخدمنا copyWith عشان نحافظ على الـ Category
         step: CountingStep.levels,
         currentQuestionIndex: 0,
         starsEarned: 0,
@@ -77,7 +83,7 @@ class CountingCubit extends Cubit<CountingState> {
     );
   }
 
-  // دالة الرجوع (Back)
+  // العودة للخلف
   void goBack() {
     if (state.step == CountingStep.questions) {
       emit(state.copyWith(step: CountingStep.levels, starsEarned: 0));

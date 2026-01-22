@@ -1,4 +1,3 @@
-// lib/feature/counting/data/cubit/counting_state.dart
 part of 'counting_cubit.dart';
 
 enum CountingStep { levels, questions, success }
@@ -8,7 +7,8 @@ class CountingState {
   final int selectedLevelIndex;
   final int currentQuestionIndex;
   final List<QuestionModel> questions;
-  final int starsEarned; // النجوم اللي كسبها فعلاً
+  final int starsEarned;
+  final String categoryName; // حقل جديد لحفظ اسم القسم الحالي
 
   CountingState({
     this.step = CountingStep.levels,
@@ -16,6 +16,7 @@ class CountingState {
     this.currentQuestionIndex = 0,
     this.questions = const [],
     this.starsEarned = 0,
+    this.categoryName = "",
   });
 
   QuestionModel? get currentQuestion =>
@@ -27,6 +28,7 @@ class CountingState {
     int? currentQuestionIndex,
     List<QuestionModel>? questions,
     int? starsEarned,
+    String? categoryName,
   }) {
     return CountingState(
       step: step ?? this.step,
@@ -34,6 +36,7 @@ class CountingState {
       currentQuestionIndex: currentQuestionIndex ?? this.currentQuestionIndex,
       questions: questions ?? this.questions,
       starsEarned: starsEarned ?? this.starsEarned,
+      categoryName: categoryName ?? this.categoryName,
     );
   }
 }

@@ -12,7 +12,7 @@ class CommonGameBackground extends StatelessWidget {
       children: [
         // 1. الخلفية الثابتة
         Image.asset(
-          "assets/images/backgroind.jpg",
+          "assets/images/backgroind.webp",
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
