@@ -14,6 +14,9 @@ import '../../../../main.dart';
 import '../../../counting/data/cubit/counting_cubit.dart';
 import '../../../counting/data/repo/counting_repository.dart';
 import '../../../sitteng/presentation/ui/sitteng_screen.dart';
+import '../../../top_frinds/data/cubit/leaderboard_cubit.dart';
+import '../../../top_frinds/data/repo/leaderboard_repository.dart';
+import '../../../top_frinds/presentation/ui/top_frendis_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -141,52 +144,53 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(25.r),
-        ),
-        backgroundColor: Colors.yellow[50],
-        insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
-        title: Center(
-          child: FittedBox(
-            child: Text(
-              "اختار اللغة - Choose Language",
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.brown,
+      builder: (context) =>
+          AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25.r),
+            ),
+            backgroundColor: Colors.yellow[50],
+            insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
+            title: Center(
+              child: FittedBox(
+                child: Text(
+                  "اختار اللغة - Choose Language",
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.brown,
+                  ),
+                ),
+              ),
+            ),
+            content: SizedBox(
+              width: 280.w,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _languageOption(
+                    title: "العربية",
+                    flag: "🇪🇬",
+                    color: Colors.green,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _navigateToVideo(arVideo, nextScreen);
+                    },
+                  ),
+                  _languageOption(
+                    title: "English",
+                    flag: "🇺🇸",
+                    color: Colors.blue,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _navigateToVideo(enVideo, nextScreen);
+                    },
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-        content: SizedBox(
-          width: 280.w,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _languageOption(
-                title: "العربية",
-                flag: "🇪🇬",
-                color: Colors.green,
-                onTap: () {
-                  Navigator.pop(context);
-                  _navigateToVideo(arVideo, nextScreen);
-                },
-              ),
-              _languageOption(
-                title: "English",
-                flag: "🇺🇸",
-                color: Colors.blue,
-                onTap: () {
-                  Navigator.pop(context);
-                  _navigateToVideo(enVideo, nextScreen);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -299,15 +303,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                         _buttonWrapper(
                           "العد".tr(),
                           const Color(0xffFFCF5F),
-                          () {
+                              () {
                             _showLanguageDialog(
                               context: context,
                               arVideo: "assets/audio/arapi.mp4",
                               enVideo: "assets/audio/eng.mp4",
                               nextScreen: BlocProvider(
                                 create: (context) =>
-                                    CountingCubit(CountingRepository())
-                                      ..startWithLevels(),
+                                CountingCubit(CountingRepository())
+                                  ..startWithLevels(),
                                 child: const CountingScreen(
                                   categoryName: 'قسم العد',
                                 ),
@@ -319,16 +323,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                         _buttonWrapper(
                           "العمليات".tr(),
                           const Color(0xff98D761),
-                          () {
+                              () {
                             _showLanguageDialog(
                               context: context,
                               arVideo: "assets/audio/Operations.mp4",
                               enVideo: "assets/audio/eng.mp4",
                               nextScreen: BlocProvider(
                                 create: (context) =>
-                                    CountingCubit(CountingRepository())
-                                      ..initCategory("قسم العمليات")
-                                      ..startWithLevels(),
+                                CountingCubit(CountingRepository())
+                                  ..initCategory("قسم العمليات")
+                                  ..startWithLevels(),
                                 child: CountingScreen(
                                   categoryName: 'قسم العمليات',
                                 ),
@@ -345,16 +349,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                         _buttonWrapper(
                           "اﻷﻋداد".tr(),
                           const Color(0xff70D6FF),
-                          () {
+                              () {
                             _showLanguageDialog(
                               context: context,
                               arVideo: "assets/audio/Numbers.mp4",
                               enVideo: "assets/audio/eng.mp4",
                               nextScreen: BlocProvider(
                                 create: (context) =>
-                                    CountingCubit(CountingRepository())
-                                      ..initCategory("قسم الاعداد")
-                                      ..startWithLevels(),
+                                CountingCubit(CountingRepository())
+                                  ..initCategory("قسم الاعداد")
+                                  ..startWithLevels(),
                                 child: CountingScreen(
                                   categoryName: 'قسم الاعداد',
                                 ),
@@ -366,16 +370,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                         _buttonWrapper(
                           "القياس".tr(),
                           const Color(0xffB19CD9),
-                          () {
+                              () {
                             _showLanguageDialog(
                               context: context,
                               arVideo: "assets/audio/Measurement.mp4",
                               enVideo: "assets/audio/eng.mp4",
                               nextScreen: BlocProvider(
                                 create: (context) =>
-                                    CountingCubit(CountingRepository())
-                                      ..initCategory("قسم القياس")
-                                      ..startWithLevels(),
+                                CountingCubit(CountingRepository())
+                                  ..initCategory("قسم القياس")
+                                  ..startWithLevels(),
                                 child: CountingScreen(
                                   categoryName: 'قسم القياس',
                                 ),
@@ -397,18 +401,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                           _buttonWrapper(
                             "الهندسة".tr(),
                             const Color(0xffB14Cf9),
-                            () {
+                                () {
                               _showLanguageDialog(
                                 context: context,
 
 
-                                arVideo: "assets/audio/Geometry.mp4",
+                                arVideo: "assets/audio/Geometry1.mp4",
                                 enVideo: "assets/audio/eng.mp4",
                                 nextScreen: BlocProvider(
                                   create: (context) =>
-                                      CountingCubit(CountingRepository())
-                                        ..initCategory("قسم الهندسه")
-                                        ..startWithLevels(),
+                                  CountingCubit(CountingRepository())
+                                    ..initCategory("قسم الهندسه")
+                                    ..startWithLevels(),
                                   child: CountingScreen(
                                     categoryName: 'قسم الهندسة',
                                   ),
@@ -448,9 +452,20 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 bottom: 20,
                 left: 20,
                 child: _buttonWrapper(
-                  "الأبطال الأوائل".tr(),
-                  const Color(0xffFF9F43),
-                  () {},
+                    "الأبطال الأوائل".tr(),
+                    const Color(0xffFF9F43),
+                        () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              BlocProvider(
+                                create: (context) => LeaderboardCubit(LeaderboardRepository())..loadLeaderboard(),
+                                child: LeaderboardScreen(),
+                              ),
+                        ),
+                      );
+                    }
                 ),
               ),
             ],

@@ -23,11 +23,11 @@ void main() async {
     );
 
     // ✨ تفعيل خاصية العمل بدون إنترنت للبيانات (Offline Persistence) ✨
+// تفعيل التخزين المحلي
     FirebaseFirestore.instance.settings = const Settings(
-      persistenceEnabled: true,
-      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+      persistenceEnabled: true, // دي بتخليه يحفظ البيانات لو مفيش نت
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED, // مساحة غير محدودة للكاش
     );
-
     print("✅ مبروك! ميرال اتصلت بفايربيز بنجاح وفعلنا نظام الـ Offline");
   } catch (e) {
     print("❌ حصل مشكلة في الاتصال: $e");

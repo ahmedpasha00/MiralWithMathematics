@@ -1,15 +1,32 @@
+class UserModel {
+  final String? uid;
+  final String? name;
+  final String? email;
+  final int totalStars; // 👈 ضيف الحقل ده لو مش موجود
 
+  UserModel({
+    this.uid,
+    this.name,
+    this.email,
+    this.totalStars = 0, // 👈 خليه يبدأ بصفر
+  });
 
-class  UserModel {
-  final String uId;
-  final String name;
+  // 👈 دالة الـ fromMap اللي الـ Repository محتاجها
+  factory UserModel.fromMap(Map<String, dynamic> map) {
+    return UserModel(
+      uid: map['uid'],
+      name: map['name'],
+      email: map['email'],
+      totalStars: map['totalStars']?.toInt() ?? 0,
+    );
+  }
 
-  UserModel({required this.uId, required this.name});
-
-  Map<String , dynamic> toMap()=>{
-    // بنحول البيانات لـ Map عشان فايربيز بيفهم لغة الـ Map بس
-
-    'uId': uId,
-    'name': name,
-  };
+  Map<String, dynamic> toMap() {
+    return {
+      'uid': uid,
+      'name': name,
+      'email': email,
+      'totalStars': totalStars,
+    };
+  }
 }

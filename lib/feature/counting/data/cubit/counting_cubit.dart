@@ -1,4 +1,6 @@
 import 'package:bloc/bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flame_audio/flame_audio.dart';
 import '../../../../core/models/question_model.dart';
 import '../repo/counting_repository.dart';
 
@@ -10,37 +12,60 @@ class CountingCubit extends Cubit<CountingState> {
 
   CountingCubit(this.repository) : super(CountingState());
 
-  // دالة تهيئة القسم
+  // ✨ دالة تشغيل صوت السؤال (معدلة لمنع الغش) ✨
+  void playCurrentQuestionAudio(String currentLang, {bool isAutoPlay = true}) {
+    final question = state.currentQuestion;
+    if (question != null) {
+      // الأقسام اللي عاوزين نوقف فيها الصوت التلقائي (العد، العمليات، الأعداد)
+      bool isCountingOrMath =
+          question.type == QuestionType.addition ||
+          question.type == QuestionType.placeValue ||
+          currentCategory.contains("العد") ||
+          currentCategory.contains("الاعداد") ||
+          currentCategory.contains("العمليات");
+
+      // لو التشغيل تلقائي (أول ما السؤال يفتح) وكان من الأقسام الممنوعة.. اخرج وماتشغلش
+      if (isAutoPlay && isCountingOrMath) {
+        return;
+      }
+
+      try {
+        String path = (currentLang == 'ar')
+            ? question.audioPathAr
+            : question.audioPathEn;
+
+        FlameAudio.play(path);
+      } catch (e) {
+        print("الصوت غير موجود في المسار المحدد: $e");
+      }
+    }
+  }
+
   void initCategory(String category) {
     currentCategory = category;
     emit(state.copyWith(step: CountingStep.levels, categoryName: category));
   }
 
-  // دالة اختيار المستوى - محدثة لدعم القياس وكافة الأقسام
-  void selectLevel(int levelIndex) {
+  void selectLevel(int levelIndex, String lang) {
     List<QuestionModel> selectedQuestions;
-
-    // 1. فحص قسم الأعداد (الآحاد والعشرات)
     if (currentCategory.contains("قسم الاعداد")) {
       selectedQuestions = repository.getPlaceValueQuestions(levelIndex);
-    }
-    // 2. فحص قسم العمليات (جمع وطرح)
-    else if (currentCategory.contains("العمليات")) {
+    } else if (currentCategory.contains("العمليات")) {
       selectedQuestions = repository.getOperationsQuestions(levelIndex);
-    }
-    // 3. فحص قسم القياس (الطول والوزن) - الجديد
-    else if (currentCategory.contains("القياس")) {
-      selectedQuestions = repository.getMeasurementQuestions(levelIndex, currentCategory);
-    }
-    // 4. قسم العد العادي
-    else {
-      if (levelIndex == 0) {
+    } else if (currentCategory.contains("القياس")) {
+      selectedQuestions = repository.getMeasurementQuestions(
+        levelIndex,
+        currentCategory,
+      );
+    } else if (currentCategory.contains("الهندسة")) {
+      selectedQuestions = repository.getGeometryQuestions(levelIndex);
+    } else {
+      if (levelIndex == 0)
         selectedQuestions = repository.getLevel1Questions();
-      } else if (levelIndex == 1) {
+      else if (levelIndex == 1)
         selectedQuestions = repository.getLevel2Questions();
-      } else {
+      else
         selectedQuestions = repository.getLevel3Questions();
-      }
     }
 
     emit(
@@ -52,11 +77,22 @@ class CountingCubit extends Cubit<CountingState> {
         questions: selectedQuestions,
       ),
     );
+
+    // هيدخل هنا ويشيك.. لو هندسة أو قياس هيشتغل، لو غير كدة هيسكت
+    playCurrentQuestionAudio(lang, isAutoPlay: true);
   }
 
-  // انتقال للسؤال التالي
-  void nextQuestion({required bool earnStar}) {
+  void nextQuestion({required bool earnStar, required String lang}) async {
     int updatedStars = earnStar ? state.starsEarned + 1 : state.starsEarned;
+
+    // 💡 حركة ذكية: لو الطفل جاوب صح (earnStar == true)
+    // بنشغل الصوت هنا عشان يسمع الإجابة (حتى في العد والعمليات)
+    if (earnStar) {
+      playCurrentQuestionAudio(
+        lang,
+        isAutoPlay: false,
+      ); // false يعني مش تلقائي، ده تشغيل متعمد
+    }
 
     if (state.currentQuestionIndex < state.questions.length - 1) {
       emit(
@@ -65,14 +101,25 @@ class CountingCubit extends Cubit<CountingState> {
           starsEarned: updatedStars,
         ),
       );
+
+      // تشغيل صوت السؤال التالي (لو هندسة أو قياس بس)
+      playCurrentQuestionAudio(lang, isAutoPlay: true);
     } else {
       emit(
         state.copyWith(step: CountingStep.success, starsEarned: updatedStars),
       );
+
+      try {
+        final userId = FirebaseAuth.instance.currentUser?.uid;
+        if (userId != null && updatedStars > 0) {
+          await repository.updateStudentStars(userId, updatedStars);
+        }
+      } catch (e) {
+        print("خطأ في تحديث النجوم: $e");
+      }
     }
   }
 
-  // إعادة البدء
   void startWithLevels() {
     emit(
       state.copyWith(
@@ -83,7 +130,6 @@ class CountingCubit extends Cubit<CountingState> {
     );
   }
 
-  // العودة للخلف
   void goBack() {
     if (state.step == CountingStep.questions) {
       emit(state.copyWith(step: CountingStep.levels, starsEarned: 0));

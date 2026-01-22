@@ -109,6 +109,7 @@ class _CountingScreenState extends State<CountingScreen>
   }
 
   Widget _buildLevelsView(BuildContext context) {
+    String currentLang = context.locale.languageCode; // جلب اللغة الحالية
     return Positioned(
       right: 40.w,
       top: 0,
@@ -120,19 +121,22 @@ class _CountingScreenState extends State<CountingScreen>
             _buildActionButton(
               text: "easy_level".tr(),
               color: Colors.green,
-              onTap: () => context.read<CountingCubit>().selectLevel(0),
+              onTap: () =>
+                  context.read<CountingCubit>().selectLevel(0, currentLang),
             ),
             SizedBox(height: 20.h),
             _buildActionButton(
               text: "medium_level".tr(),
               color: Colors.orange,
-              onTap: () => context.read<CountingCubit>().selectLevel(1),
+              onTap: () =>
+                  context.read<CountingCubit>().selectLevel(1, currentLang),
             ),
             SizedBox(height: 20.h),
             _buildActionButton(
               text: "hard_level".tr(),
               color: Colors.redAccent,
-              onTap: () => context.read<CountingCubit>().selectLevel(2),
+              onTap: () =>
+                  context.read<CountingCubit>().selectLevel(2, currentLang),
             ),
           ],
         ),
@@ -145,8 +149,14 @@ class _CountingScreenState extends State<CountingScreen>
     if (currentQuestion == null) return const SizedBox.shrink();
 
     final String currentEmoji = _emojis[state.starsEarned % _emojis.length];
-    bool isOperations = widget.categoryName.contains('العمليات');
-    bool isPlaceValue = widget.categoryName.contains('قسم الاعداد');
+    bool isOperations =
+        currentQuestion.type == QuestionType.addition ||
+        widget.categoryName.contains('العمليات');
+    bool isPlaceValue =
+        currentQuestion.type == QuestionType.placeValue ||
+        widget.categoryName.contains('قسم الاعداد');
+    bool isMeasurement = currentQuestion.type == QuestionType.measurement;
+    bool isGeometry = currentQuestion.type == QuestionType.geometry;
 
     return Positioned(
       left: 90.w,
@@ -182,7 +192,11 @@ class _CountingScreenState extends State<CountingScreen>
                     ),
                   ),
                   child: Center(
-                    child: isPlaceValue
+                    child: isGeometry
+                        ? _buildGeometryLayout(currentQuestion, context)
+                        : isMeasurement
+                        ? _buildMeasurementLayout(currentQuestion, context)
+                        : isPlaceValue
                         ? _buildPlaceValueLayout(currentQuestion)
                         : isOperations
                         ? _buildAdditionLayout(currentQuestion, currentEmoji)
@@ -204,7 +218,9 @@ class _CountingScreenState extends State<CountingScreen>
                       child: _buildOptionButton(
                         context,
                         option,
-                        currentQuestion.correctAnswer ?? currentQuestion.count,
+                        currentQuestion.correctOption ??
+                            currentQuestion.correctAnswer ??
+                            currentQuestion.count,
                         state,
                       ),
                     );
@@ -215,6 +231,132 @@ class _CountingScreenState extends State<CountingScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMeasurementLayout(QuestionModel question, BuildContext context) {
+    String instruction = context.locale.languageCode == 'ar'
+        ? question.instructionAr ?? ""
+        : question.instructionEn ?? "";
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SizedBox(
+          height: constraints.maxHeight,
+          width: constraints.maxWidth,
+          child: Column(
+            children: [
+              SizedBox(
+                height: constraints.maxHeight * 0.25,
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        instruction,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.yellowAccent,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: constraints.maxHeight * 0.60,
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: question.options.map((emoji) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10.w),
+                          child: Text(
+                            emoji.toString(),
+                            style: TextStyle(fontSize: 100.sp),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: constraints.maxHeight * 0.15,
+                child: Opacity(
+                  opacity: 0.3,
+                  child: Icon(
+                    question.instructionAr!.contains("طول")
+                        ? Icons.straighten
+                        : Icons.balance,
+                    color: Colors.white,
+                    size: 30.sp,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGeometryLayout(QuestionModel question, BuildContext context) {
+    String instruction = context.locale.languageCode == 'ar'
+        ? question.instructionAr ?? ""
+        : question.instructionEn ?? "";
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Column(
+          children: [
+            SizedBox(
+              height: constraints.maxHeight * 0.25,
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 5.w),
+                  child: FittedBox(
+                    child: Text(
+                      instruction,
+                      style: TextStyle(
+                        color: Colors.yellowAccent,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: question.options.map((shape) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w),
+                        child: Text(
+                          shape.toString(),
+                          style: TextStyle(fontSize: 85.sp),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: constraints.maxHeight * 0.1),
+          ],
+        );
+      },
     );
   }
 
@@ -244,18 +386,18 @@ class _CountingScreenState extends State<CountingScreen>
         Expanded(
           child: Center(
             child: FittedBox(
-              fit: BoxFit.scaleDown,
+              fit: BoxFit.contain,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _emojiGroup(question.firstNum, emoji),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
                     child: Text(
                       question.isAddition ? "+" : "-",
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 40.sp,
+                        fontSize: 100.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -279,7 +421,6 @@ class _CountingScreenState extends State<CountingScreen>
     );
   }
 
-  // --- تصميم الآحاد والعشرات الجديد (البيوت ريسبونسف) ---
   Widget _buildPlaceValueLayout(QuestionModel question) {
     String questionTitle = question.firstNum == 1
         ? "من يسكن في بيت الآحاد؟".tr()
@@ -298,11 +439,8 @@ class _CountingScreenState extends State<CountingScreen>
           ),
         ),
         SizedBox(height: 10.h),
-
-        SizedBox(height: 10.h),
         Text(
-          "${"العدد".tr()}: ${question.count.toString().tr()}", // ترجمنا الكلمة لوحدها والرقم لوحده
-          // "العدد: ${question.count}".tr(),
+          "${"العدد".tr()}: ${question.count.toString().tr()}",
           style: TextStyle(
             color: Colors.white,
             fontSize: 16.sp,
@@ -313,61 +451,13 @@ class _CountingScreenState extends State<CountingScreen>
     );
   }
 
-  Widget _buildHouseUI({
-    required String title,
-    required String value,
-    required Color color,
-    required bool isLarge,
-  }) {
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            // Icon(Icons.home, color: color, size: isLarge ? 80.sp : 65.sp),
-            Padding(
-              padding: EdgeInsets.only(bottom: 35.h),
-              child: Container(
-                width: isLarge ? 30.w : 30.w,
-                height: isLarge ? 45.h : 45.h,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(5.r),
-                ),
-                child: Center(
-                  child: Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          title,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _emojiGroup(int count, String emoji) {
     return Container(
-      constraints: BoxConstraints(maxWidth: 100.w),
+      constraints: BoxConstraints(maxWidth: 200.w),
       child: Wrap(
         alignment: WrapAlignment.center,
-        spacing: 4.w,
-        runSpacing: 4.h,
+        spacing: 8.w,
+        runSpacing: 2.h,
         children: List.generate(
           count,
           (index) => Text(emoji, style: TextStyle(fontSize: 25.sp)),
@@ -429,38 +519,47 @@ class _CountingScreenState extends State<CountingScreen>
   }
 
   Widget _buildOptionButton(
-      BuildContext context,
-      int value,
-      int correctAnswer,
-      CountingState state,
-      ) {
+    BuildContext context,
+    dynamic value,
+    dynamic correctAnswer,
+    CountingState state,
+  ) {
+    final currentQuestion = state.currentQuestion!;
+    bool isMeasurement = currentQuestion.type == QuestionType.measurement;
+    bool isGeometry = currentQuestion.type == QuestionType.geometry;
+
     return InkWell(
       onTap: () async {
         String langCode = context.locale.languageCode;
 
-        // 1. نطق الرقم اللي الطفل ضغط عليه (سواء صح أو غلط)
+        // تشغيل صوت الإجابة المختارة (الرقم أو الكلمة)
         try {
-          await FlameAudio.play('$langCode/$value.mp3', volume: 1.0);
+          if (isMeasurement || isGeometry) {
+            // للهندسة والقياس نترك الكيوبت يتولى نطق السؤال، وهنا نشغل كليك فقط أو صوت الاختيار إذا توفر
+            _playClickSound();
+          } else {
+            await FlameAudio.play('$langCode/$value.mp3', volume: 1.0);
+          }
         } catch (e) {
           debugPrint("Audio error: $e");
         }
 
-        // 2. التحقق من الإجابة
-        if (value == correctAnswer) {
-          // تأخير بسيط عشان يلحق يسمع اسم الرقم قبل ما السؤال يتغير
+        if (value.toString() == correctAnswer.toString()) {
           await Future.delayed(const Duration(milliseconds: 700));
-
-          context.read<CountingCubit>().nextQuestion(earnStar: _isFirstAttempt);
+          // تمرير اللغة للكيوبت لينطق السؤال التالي تلقائياً ويرفع النجوم
+          context.read<CountingCubit>().nextQuestion(
+            earnStar: _isFirstAttempt,
+            lang: langCode,
+          );
           setState(() {
             _isFirstAttempt = true;
           });
         } else {
-          // لو الإجابة غلط بنعمل الهزة فقط (لأن الصوت اشتغل فوق خلاص)
           _triggerShake();
         }
       },
       child: Container(
-        width: 40.w,
+        width: 45.w,
         height: 60.h,
         decoration: BoxDecoration(
           color: Colors.blueAccent,
@@ -473,9 +572,11 @@ class _CountingScreenState extends State<CountingScreen>
             child: Padding(
               padding: EdgeInsets.all(4.w),
               child: Text(
-                value.toString().tr(),
+                (isMeasurement || isGeometry)
+                    ? value.toString()
+                    : value.toString().tr(),
                 style: TextStyle(
-                  fontSize: 20.sp,
+                  fontSize: (isMeasurement || isGeometry) ? 35.sp : 20.sp,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),

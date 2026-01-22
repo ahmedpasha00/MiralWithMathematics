@@ -174,7 +174,7 @@ class _SittengScreenState extends State<SittengScreen> {
                       onTap: () {
                         _showCartoonDialog(
                           title: "are_you_sure",
-                          message: "delete_warning",
+                          message: "",
                           onConfirm: () async {
                             try {
                               final user = FirebaseAuth.instance.currentUser;
@@ -220,7 +220,7 @@ class _SittengScreenState extends State<SittengScreen> {
                       onTap: () {
                         _showCartoonDialog(
                           title: "logout",
-                          message: "logout_confirm_msg",
+                          message: "",
                           onConfirm: () async {
                             await FirebaseAuth.instance.signOut();
                             _navigateToAuth(); // انتقال فوري

@@ -1,4 +1,10 @@
-enum QuestionType { counting, addition, placeValue, measurement }
+enum QuestionType {
+  counting,
+  addition,
+  placeValue,
+  measurement,
+  geometry // <--- ضفنا النوع ده بس عشان قسم الهندسة الجديد
+}
 
 class QuestionModel {
   final int count;
@@ -10,12 +16,12 @@ class QuestionModel {
   final int firstNum;
   final int secondNum;
 
-  // --- الحقول الجديدة للآحاد والعشرات ---
+  // --- الحقول الخاصة بالآحاد والعشرات ---
   final int? ones;
   final int? tens;
   final int? correctAnswer;
 
-  // --- حقول ألعاب القياس (الطول والوزن) ---
+  // --- حقول ألعاب القياس (الطول والوزن) والهندسة ---
   final QuestionType type;
   final String? instructionAr;
   final String? instructionEn;
@@ -33,7 +39,7 @@ class QuestionModel {
     this.ones,
     this.tens,
     this.correctAnswer,
-    // قيم افتراضية
+    // قيم افتراضية عشان الكود القديم ميبوظش
     this.type = QuestionType.counting,
     this.instructionAr,
     this.instructionEn,
